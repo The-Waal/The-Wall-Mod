@@ -13,3 +13,4 @@ Adds:
 
 It may not be much now, but soon it will improve!
 
+Join my Discord Server please! discord.gg/48HsAWWEwB
