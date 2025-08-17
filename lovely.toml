@@ -1,0 +1,43 @@
+[manifest]
+version = "1.0.0"
+dump_lua = true
+priority = 0
+
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "if G.GAME.round_resets.blind == G.P_BLINDS.bl_small then"
+position = "at"
+payload = '''
+print(G.GAME.blind_on_deck)
+if G.GAME.blind_on_deck == "Small" then
+'''
+match_indent = true
+overwrite = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "elseif G.GAME.round_resets.blind == G.P_BLINDS.bl_big then"
+position = "at"
+payload = '''
+elseif G.GAME.blind_on_deck == "Big" then
+print("BIG")
+'''
+match_indent = true
+overwrite = true
+
+
+[[patches]]
+[patches.pattern]
+target = "functions/state_events.lua"
+pattern = "delay(0.4); ease_ante(1); delay(0.4); check_for_unlock({type = 'ante_up', ante = G.GAME.round_resets.ante + 1})"
+position = "at"
+payload = '''
+if G.GAME.blind_on_deck == "Boss" then
+	delay(0.4); ease_ante(1); delay(0.4); check_for_unlock({type = 'ante_up', ante = G.GAME.round_resets.ante + 1})
+end
+'''
+match_indent = true
+overwrite = true
