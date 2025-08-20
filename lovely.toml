@@ -28,7 +28,6 @@ print("BIG")
 match_indent = true
 overwrite = true
 
-
 [[patches]]
 [patches.pattern]
 target = "functions/state_events.lua"
@@ -38,6 +37,29 @@ payload = '''
 if G.GAME.blind_on_deck == "Boss" then
 	delay(0.4); ease_ante(1); delay(0.4); check_for_unlock({type = 'ante_up', ante = G.GAME.round_resets.ante + 1})
 end
+'''
+match_indent = true
+overwrite = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "G.hand_text_area.hand_level.config.colour = G.C.HAND_LEVELS[math.min(vals.level, 7)]"
+position = "at"
+payload = '''
+G.hand_text_area.hand_level.config.colour = G.C.HAND_LEVELS[math.min(math.ceil(vals.level), 7)]
+'''
+match_indent = true
+overwrite = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/common_events.lua"
+pattern = "G.GAME.hands[_c.config.hand_type].level,localize(_c.config.hand_type, 'poker_hands'), G.GAME.hands[_c.config.hand_type].l_mult, G.GAME.hands[_c.config.hand_type].l_chips,"
+position = "at"
+payload = '''
+G.GAME.hands[_c.config.hand_type].level,localize(_c.config.hand_type, 'poker_hands'), G.GAME.hands[_c.config.hand_type].l_mult, G.GAME.hands[_c.config.hand_type].l_chips,
+colours = {(G.GAME.hands[_c.config.hand_type].level==1 and G.C.UI.TEXT_DARK or G.C.HAND_LEVELS[math.min(7, math.ceil(G.GAME.hands[_c.config.hand_type].level))])}
 '''
 match_indent = true
 overwrite = true
