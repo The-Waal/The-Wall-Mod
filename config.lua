@@ -1,6 +1,8 @@
 return {
 	["AllBoss"] = true,
 	["Dev"] = false,
-	["Base"] = "penunt-butter",
-        ["Scaling"] = "jelly",
+	["HardMode"] = false,
+	["UltraHardMode"] = false,
+	["Base"] = 100,
+	["Scaling"] = 100,
 }
