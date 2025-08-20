@@ -4,7 +4,7 @@
 --- PREFIX: Wall
 --- MOD_AUTHOR: [THE WAAL]
 --- MOD_DESCRIPTION: Adds a few blinds and new features!
---- VERSION: 0.0.0
+--- VERSION: 0.0.1
 
 
 local mod_path = "" .. SMODS.current_mod.path
@@ -31,6 +31,7 @@ SMODS.Atlas({ key = "jokeratlas1", atlas_table = "ASSET_ATLAS", path = "jokers1.
 SMODS.Atlas({ key = "blindatlas1", atlas_table = "ANIMATION_ATLAS", path = "blindatlas1.png", px = 34, py = 34, frames = 21 })
 SMODS.Atlas({ key = "packlas1", atlas_table = "ASSET_ATLAS", path = "pack1.png", px = 71, py = 95 })
 SMODS.Atlas({ key = "cons1", atlas_table = "ASSET_ATLAS", path = "cons1.png", px = 71, py = 95 })
+SMODS.Atlas({ key = "Jokers", atlas_table = "ASSET_ATLAS", path = "jokers.png", px = 71, py = 95 })
 SMODS.Atlas({ key = "Consumeables", atlas_table = "ASSET_ATLAS", path = "consumeables.png", px = 71, py = 95 })
 SMODS.Atlas({ key = "GMRA", atlas_table = "ASSET_ATLAS", path = "grosmichelrank.png", px = 71, py = 95 })
 SMODS.Atlas({ key = "wstake", atlas_table = "ASSET_ATLAS", path = "stake.png", px = 29, py = 29 })
@@ -39,96 +40,7 @@ SMODS.Atlas({ key = "wstake", atlas_table = "ASSET_ATLAS", path = "stake.png", p
 --misc functions
 ----
 
-function get_flush(hand)
-  local ret = {}
-  local four_fingers = next(find_joker('Four Fingers'))
-  local suits = {
-    "Spades",
-    "Hearts",
-    "Clubs",
-    "Diamonds"
-  }
-  if #hand > 5 or #hand < (5 - (four_fingers and 1 or 0)) then return ret else
-    for j = 1, #suits do
-      local t = {}
-      local suit = suits[j]
-      local flush_count = 0
-      for i=1, #hand do
-        if hand[i]:is_suit(suit, nil, true) then flush_count = flush_count + 1;  t[#t+1] = hand[i] end 
-      end
-      if flush_count >= (5 - (four_fingers and 1 or 0)) then
-        table.insert(ret, t)
-        return ret
-      end
-    end
-    return {}
-  end
-end
 
-function get_straight(hand)
-  local ret = {}
-  local four_fingers = next(find_joker('Four Fingers'))
-  if #hand > 5 or #hand < (5 - (four_fingers and 1 or 0)) then return ret else
-    local t = {}
-    local IDS = {}
-    for i=1, #hand do
-      local id = hand[i]:get_id()
-      if id > 1 and id < 15 then
-        if IDS[id] then
-          IDS[id][#IDS[id]+1] = hand[i]
-        else
-          IDS[id] = {hand[i]}
-        end
-      end
-    end
-
-    local straight_length = 0
-    local straight = false
-    local can_skip = next(find_joker('Shortcut')) 
-    local skipped_rank = false
-    for j = 1, 14 do
-      if IDS[j == 1 and 14 or j] then
-        straight_length = straight_length + 1
-        skipped_rank = false
-        for k, v in ipairs(IDS[j == 1 and 14 or j]) do
-          t[#t+1] = v
-        end
-      elseif can_skip and not skipped_rank and j ~= 14 then
-          skipped_rank = true
-      else
-        straight_length = 0
-        skipped_rank = false
-        if not straight then t = {} end
-        if straight then break end
-      end
-      if straight_length >= (5 - (four_fingers and 1 or 0)) then straight = true end 
-    end
-    if not straight then return ret end
-    table.insert(ret, t)
-    return ret
-  end
-end
-
-function get_X_same(num, hand)
-	local vals = {{},{},{},{},{},{},{},{},{},{},{},{},{},{}}
-	for i=#hand, 1, -1 do
-		local curr = {}
-		table.insert(curr, hand[i])
-		for j=1, #hand do
-			if hand[i]:get_id() == hand[j]:get_id() and i ~= j then
-				table.insert(curr, hand[j])
-			end
-		end
-		if #curr == num then
-			vals[curr[1]:get_id()] = curr
-		end
-	end
-	local ret = {}
-	for i=#vals, 1, -1 do
-		if next(vals[i]) then table.insert(ret, vals[i]) end
-	end
-	return ret
-end
 
 
 -------------
@@ -147,14 +59,14 @@ SMODS.PokerHand {
 	l_chips = 24,
 	l_mult = 3,
 	example = {
-		{'S_3', false},
+		{'S_3', false, seal = "Red", edition = "e_polychrome", enhancement = "m_glass"},
 		{'H_2', true, enhancement = 'm_mult'},
 		{'S_4', true, enhancement = 'm_bonus'},
 		{'C_7', true, enhancement = 'm_lucky'},
-		{'D_K', false}
+		{'D_K', false, seal = "Blue", edition = "e_negative", enhancement = "m_gold"}
 	},
 	evaluate = function(parts, hand)
-		if true then return {} end
+		
 		if #get_flush(hand) >= 1 then return {} end
 		if #get_straight(hand) >= 1 then return {} end
 		local valid = {}
@@ -231,6 +143,43 @@ SMODS.Consumable {
 
 --stakes
 --nothing here yet :(
+
+--jokers
+SMODS.Joker {
+	key = "JamesGamesWeak",
+	loc_txt = {
+		name = 'JamesGames',
+		text = { 'Scoring cards give {X:mult,C:white}X#1#{} Mult,', 'Increases by {X:mult,C:white}X#2#{} when a{C:money} 2, 4, {}or{C:money} 7{} is scored' }
+	},
+	loc_vars = function(self, info_q, card)
+		return {
+			vars = {card.ability.extra.mult, card.ability.extra.gain},
+			--text_colour = G.C.WHITE,
+		}
+	end,
+	config = {extra = {mult = 1.0, gain = 0.05}},
+	atlas = "Jokers",
+	pos = {x = 0, y = 0},
+	soul_pos = {x = 1, y = 0},
+	rarity = 3,
+	blueprint_compat = true,
+	pools = {["Modded"] = true, ["Wall"] = true},
+	cost = 7,
+	calculate = function(self, card, context)
+		if context.individual and context.cardarea == G.play then
+			
+			if context.other_card:get_id() == 2 or context.other_card:get_id() == 4 or context.other_card:get_id() == 7 then
+				card.ability.extra.mult = card.ability.extra.mult + card.ability.extra.gain
+				
+				if true then return {message = "Upgrade", colour = G.C.MONEY, xmult = card.ability.extra.mult} end
+			else
+				return {xmult = card.ability.extra.mult}
+			end
+		end
+	end,
+}
+
+
 
 --blinds
 --[[ most disabled because I dont like them lol
@@ -947,6 +896,9 @@ function reset_blinds()
 		if config["AllBoss"] then
 			G.GAME.round_resets.blind_choices.Big = get_new_boss()
 			G.GAME.round_resets.blind_choices.Small = get_new_boss()
+		else
+			G.GAME.round_resets.blind_choices.Small = "bl_small"
+			G.GAME.round_resets.blind_choices.Big = "bl_big"
 		end
 
 		G.GAME.round_resets.blind_choices.Boss = get_new_boss()
