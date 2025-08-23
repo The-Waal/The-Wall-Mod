@@ -80,7 +80,7 @@ SMODS.PokerHand {
 	evaluate = function(parts, hand)
 		
 		if #get_flush(hand) >= 1 then return {} end
-		if #get_straight(hand) >= 1 then return {} end
+
 		local valid = {}
 		local count1 = 0
 		local count2 = 0
@@ -1004,6 +1004,7 @@ end
 
 
 ----
+
 
 
 
