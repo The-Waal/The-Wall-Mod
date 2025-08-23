@@ -2,16 +2,16 @@
 
 ## This *\*awesome\** mod adds cool new features to Balatro!
 
-##### Adds:
+### Adds:
 
-###### Misc:
+#### Misc:
 
 * 1 Joker
 * 2 Blinds (mostly placeholder)
 * 24/7 Hand
 * One consumable
 
-###### Config:
+#### Config:
 
 * Hard Mode (blinds scale slightly more, after ante 8 Boss blind replaced with showdown, S+B blinds replaced with bosses)
 * Zero Blind Size
