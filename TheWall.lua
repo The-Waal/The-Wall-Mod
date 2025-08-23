@@ -15,8 +15,16 @@ config.gameset_toggle = true
 SMODS.current_mod.config_tab = function()
 	return {n = G.UIT.ROOT, config = {r = 0.2, minw = 12, minh = 9, align = "tm", padding = 0.1, colour = HEX('442266'), outline = 3, outline_colour = G.C.PURPLE}, nodes = {
 		{n = G.UIT.R, config = {minw=6, minh=3, colour = G.C.CLEAR, padding = 0.3, r = 0.1}, nodes = {
-			create_toggle({label = "0BlindSize (restart)", ref_table = config, ref_value = "Dev"}),
-			create_toggle({label = "AllBossBlinds", ref_table = config, ref_value = "AllBoss"})
+			create_toggle({label = "Zero Blind Size", ref_table = config, ref_value = "Dev"}),
+			create_toggle({label = "All Boss Blinds", ref_table = config, ref_value = "AllBoss"}),
+			create_toggle({label = "Hard Mode", ref_table = config, ref_value = "HardMode"}),
+			create_option_cycle({
+				scale = 1, 
+				w = 4, 
+				label = "Scaling", 
+				current_option = config["Blind_Scaling_ID"], 
+				opt_callback = 'Waal_upd_score_opt',
+				options = {"None", "Needle (0.5x)", "Water (2x)", "House (5x)", "Manacle (10x)", "Voilet Vessel (25x)", "Cryptid (100x)", "Roffle (1000x)", "Ralsei (1e10x)", "The Waal (1e100x)"}})
 		}},
 	
 	}}
@@ -40,7 +48,11 @@ SMODS.Atlas({ key = "wstake", atlas_table = "ASSET_ATLAS", path = "stake.png", p
 --misc functions
 ----
 
-
+G.FUNCS.Waal_upd_score_opt = function(e)
+	config.Blind_Scaling_ID = e.to_key
+	local scale_opts = {"None", "Needle (0.5x)", "Water (2x)", "House (5x)", "Manacle (10x)", "Voilet Vessel (25x)", "Cryptid (100x)", "Roffle (1000x)", "Ralsei (1e10x)", "The Waal (1e100x)"}
+	config.Blind_Scaling = scale_opts[e.to_key]
+end
 
 
 -------------
@@ -91,9 +103,6 @@ SMODS.PokerHand {
 				end
 			end
 		end
-		--if hand[1].base.id == 10 then
-		--	print("WOOOOOOOOW")
-		--end
 				
 
 		if #valid > 0 and count1 == 1 and count2 == 1 and count3 == 1 then
@@ -879,9 +888,83 @@ function get_new_boss()
 	return bl
 end
 ]]
+
+local s_table = {"None", "Needle (0.5x)", "Water (2x)", "House (5x)", "Manacle (10x)", "Voilet Vessel (25x)", "Cryptid (100x)", "Roffle (1000x)", "Ralsei (1e10x)", "The Waal (1e100x)"}
+local n_table = {nil, 0.5, 2, 5, 10, 25, 100, 1000, 1e10, 1e100}
+local gba = get_blind_amount
+function get_blind_amount(ante)
+	local amount = gba(ante)
+	if config.Dev then
+		return 0
+	end
+	if config["HardMode"] then
+		local power = ante^2 * 0.00100099 + 1
+		amount = amount ^ power ^ (ante/8)
+	end
+
+	if config["Blind_Scaling"] and config["Blind_Scaling"] ~= "None" then
+		local num = 1
+		local scaling = 1
+		for i = 1, #s_table do
+			if config["Blind_Scaling"] == s_table[i] then num = i end
+		end
+		if num ~= 1 then
+			scaling = math.log(n_table[num]*50000,50000)
+		end
+		amount = amount ^ scaling^(ante/8)
+	end
+
+	return amount
+end
+
+
+
+
+function get_new_showdown()
+	G.GAME.perscribed_bosses = G.GAME.perscribed_bosses or {}
+	if G.GAME.perscribed_bosses and G.GAME.perscribed_bosses[G.GAME.round_resets.ante] then 
+		local ret_boss = G.GAME.perscribed_bosses[G.GAME.round_resets.ante] 
+		G.GAME.perscribed_bosses[G.GAME.round_resets.ante] = nil
+		G.GAME.bosses_used[ret_boss] = G.GAME.bosses_used[ret_boss] + 1
+		return ret_boss
+	end
+	local min_use = 100
+	if G.FORCE_BOSS then return G.FORCE_BOSS end
+	local eligible_bosses = {}
+	for k, v in pairs(G.P_BLINDS) do
+		if not v.boss then
+			
+		elseif not v.boss.showdown and (v.boss.min <= math.max(1, G.GAME.round_resets.ante) and ((math.max(1, G.GAME.round_resets.ante))%G.GAME.win_ante ~= 0 or G.GAME.round_resets.ante < 2)) then
+			--eligible_bosses[k] = true
+		elseif v.boss.showdown then
+			eligible_bosses[k] = true
+		end
+	end
+	for k, v in pairs(G.GAME.bosses_used) do
+		if eligible_bosses[k] then
+			eligible_bosses[k] = v
+			if eligible_bosses[k] <= min_use then 
+				min_use = eligible_bosses[k]
+			end
+		end
+	end
+	for k, v in pairs(eligible_bosses) do
+		if eligible_bosses[k] then
+			if eligible_bosses[k] > min_use then 
+				eligible_bosses[k] = nil
+			end
+		end
+	end
+	local _, boss = pseudorandom_element(eligible_bosses, pseudoseed('boss'))
+	G.GAME.bosses_used[boss] = G.GAME.bosses_used[boss] + 1
+	
+	return boss
+
+
+end
+
 function reset_blinds()
 	G.GAME.round_resets.blind_states = G.GAME.round_resets.blind_states or {Small = 'Select', Big = 'Upcoming', Boss = 'Upcoming'}
-	--print(G.GAME.round_resets.blind_choices.Big)
 	if config["AllBoss"] then
 		if G.GAME.round_resets.blind_choices.Big == "bl_big" then
 			G.GAME.round_resets.blind_choices.Big = get_new_boss()
@@ -893,15 +976,19 @@ function reset_blinds()
 	end
 	if G.GAME.round_resets.blind_states.Boss == 'Defeated' then
 
-		if config["AllBoss"] then
+		if config["AllBoss"] or config["HardMode"] and G.GAME.round_resets.ante > G.GAME.win_ante then
 			G.GAME.round_resets.blind_choices.Big = get_new_boss()
 			G.GAME.round_resets.blind_choices.Small = get_new_boss()
 		else
 			G.GAME.round_resets.blind_choices.Small = "bl_small"
 			G.GAME.round_resets.blind_choices.Big = "bl_big"
 		end
+		if config["HardMode"] and G.GAME.round_resets.ante > G.GAME.win_ante then
+			G.GAME.round_resets.blind_choices.Boss = get_new_showdown()
+		else
+			G.GAME.round_resets.blind_choices.Boss = get_new_boss()
+		end
 
-		G.GAME.round_resets.blind_choices.Boss = get_new_boss()
 
 		G.GAME.round_resets.blind_states.Small = 'Upcoming'
 		G.GAME.round_resets.blind_states.Big = 'Upcoming'
@@ -914,11 +1001,7 @@ function reset_blinds()
 
 end
 
-if config.Dev then
-	function get_blind_amount(ante)
-		return 0
-	end
-end
+
 
 ----
 
