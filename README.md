@@ -1,16 +1,19 @@
 # **The Wall mod!**
 
-This \*awesome\* mod adds a few new features to balatro!
----
+## This *\*awesome\** mod adds cool new features to Balatro!
 
-Adds:
+##### Adds:
 
-* One new hand
-* One new joker
-* Two blinds (or like 20 blinds I just like removed the ones I didn't like lol)
-* Can make all blinds boss blinds
-* Can make all blinds 0 blind size
+###### Misc:
 
-It may not be much now, but soon it will improve!
-Join my Discord Server please! discord.gg/48HsAWWEwB
+* 1 Joker
+* 2 Blinds (mostly placeholder)
+* 24/7 Hand
+* One consumable
 
+###### Config:
+
+* Hard Mode (blinds scale slightly more, after ante 8 Boss blind replaced with showdown, S+B blinds replaced with bosses)
+* Zero Blind Size
+* All Boss Blinds (you can now make ALL blinds boss blinds!)
+* Scaling (change how much blinds scale from 0.5x to 1e100x!)
