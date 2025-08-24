@@ -3,6 +3,7 @@
 ## This *\*awesome\** mod adds cool new features to Balatro!
 
 ### Adds:
+* Blind Customization
 
 #### Misc:
 
@@ -17,3 +18,4 @@
 * Zero Blind Size
 * All Boss Blinds (you can now make ALL blinds boss blinds!)
 * Scaling (change how much blinds scale from 0.5x to 1e100x!)
+
