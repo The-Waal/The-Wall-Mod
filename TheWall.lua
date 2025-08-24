@@ -88,7 +88,7 @@ SMODS.Atlas({ key = "wstake", atlas_table = "ASSET_ATLAS", path = "stake.png", p
 ----
 --misc functions
 ----
---[[
+--
 G.FUNCS.Waal_upd_score_opt = function(e)
 	config.Blind_Scaling_ID = e.to_key
 	local scale_opts = {"None", "Needle (0.5x)", "Water (2x)", "House (5x)", "Manacle (10x)", "Voilet Vessel (25x)", "Cryptid (100x)", "Roffle (1000x)", "Ralsei (1e10x)", "The Waal (1e100x)"}
@@ -110,7 +110,7 @@ end
 -------------
 --hands
 -------------
-
+--[[
 SMODS.PokerHand {
 	loc_txt = {
 		name = '24/7',
@@ -1129,6 +1129,7 @@ end
 
 
 ----
+
 
 
 
