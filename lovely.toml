@@ -43,6 +43,17 @@ overwrite = true
 
 [[patches]]
 [patches.pattern]
+target = "functions/state_events.lua"
+pattern = "if G.GAME.blind:get_type() == 'Boss' then"
+position = "at"
+payload = '''
+if G.GAME.blind_on_deck == "Boss" then
+'''
+match_indent = true
+overwrite = true
+
+[[patches]]
+[patches.pattern]
 target = "functions/common_events.lua"
 pattern = "G.hand_text_area.hand_level.config.colour = G.C.HAND_LEVELS[math.min(vals.level, 7)]"
 position = "at"
