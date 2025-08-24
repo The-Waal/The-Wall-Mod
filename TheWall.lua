@@ -12,21 +12,62 @@ local config = SMODS.current_mod.config or {}
 local debug = false
 config.gameset_toggle = true
 
+
 SMODS.current_mod.config_tab = function()
-	return {n = G.UIT.ROOT, config = {r = 0.2, minw = 12, minh = 9, align = "tm", padding = 0.1, colour = HEX('442266'), outline = 3, outline_colour = G.C.PURPLE}, nodes = {
-		{n = G.UIT.R, config = {minw=6, minh=3, colour = G.C.CLEAR, padding = 0.3, r = 0.1}, nodes = {
-			create_toggle({label = "Zero Blind Size", ref_table = config, ref_value = "Dev"}),
-			create_toggle({label = "All Boss Blinds", ref_table = config, ref_value = "AllBoss"}),
-			create_toggle({label = "Hard Mode", ref_table = config, ref_value = "HardMode"}),
+	return {n = G.UIT.ROOT, config = {r = 0.2, minw = 12, minh = 9, align = "cl", padding = 0.1, colour = HEX('442266'), outline = 3, outline_colour = G.C.PURPLE}, nodes = {
+		{n = G.UIT.C, config = {minw=6, minh=9, colour = G.C.MONEY, padding = 0.3, r = 0.1}, nodes = {
 			create_option_cycle({
 				scale = 1, 
 				w = 4, 
 				label = "Scaling", 
 				current_option = config["Blind_Scaling_ID"], 
 				opt_callback = 'Waal_upd_score_opt',
-				options = {"None", "Needle (0.5x)", "Water (2x)", "House (5x)", "Manacle (10x)", "Voilet Vessel (25x)", "Cryptid (100x)", "Roffle (1000x)", "Ralsei (1e10x)", "The Waal (1e100x)"}})
+				options = {"None", "Needle (0.5x)", "Water (2x)", "House (5x)", "Manacle (10x)", "Voilet Vessel (25x)", "Cryptid (100x)", "Roffle (1000x)", "Ralsei (1e10x)", "The Waal (1e100x)"}
+			}),
+			create_option_cycle({
+				scale = 1, 
+				w = 4, 
+				label = "Small Blind", 
+				current_option = config["Blind_Custom"].Small, 
+				opt_callback = 'Waal_upd_SB_opt',
+				options = {"Small", "Big", "Boss", "Showdown", "Removed"}
+			}),
+			create_option_cycle({
+				scale = 1, 
+				w = 4, 
+				label = "Big Blind", 
+				current_option = config["Blind_Custom"].Big, 
+				opt_callback = 'Waal_upd_BB_opt',
+				options = {"Small", "Big", "Boss", "Showdown", "Removed"}
+			}),
+			create_option_cycle({
+				scale = 1, 
+				w = 4, 
+				label = "Boss Blind", 
+				current_option = config["Blind_Custom"].Boss, 
+				opt_callback = 'Waal_upd_BS_opt',
+				options = {"Small", "Big", "Boss", "Showdown"}
+			}),
+			create_option_cycle({
+				scale = 1, 
+				w = 4, 
+				label = "Showdown Blind", 
+				current_option = config["Blind_Custom"].Showdown, 
+				opt_callback = 'Waal_upd_SD_opt',
+				options = {"Small", "Big", "Boss", "Showdown", "Removed"}
+			}),
+
 		}},
 	
+		{n = G.UIT.C, config = {minw=6, minh=9, colour = G.C.MONEY, padding = 0.3, r = 0.1}, nodes = {
+			create_toggle({label = "Zero Blind Size", ref_table = config, ref_value = "Dev"}),
+			create_toggle({label = "All Boss Blinds", ref_table = config, ref_value = "AllBoss"}),
+			create_toggle({label = "Hard Mode", ref_table = config, ref_value = "HardMode"}),
+			create_toggle({label = "Showdowns", ref_table = config["Blind_Custom"], ref_value = "ShowdownToggle"}),
+			create_toggle({label = "Small Blind Showdowns", ref_table = config["Blind_Custom"], ref_value = "Small_SD"}),
+			create_toggle({label = "Big Blind Showdowns", ref_table = config["Blind_Custom"], ref_value = "Big_SD"}),
+			create_toggle({label = "Boss Blind Showdowns", ref_table = config["Blind_Custom"], ref_value = "Boss_SD"}),
+		}},
 	}}
 end
 
@@ -54,7 +95,18 @@ G.FUNCS.Waal_upd_score_opt = function(e)
 	config.Blind_Scaling = scale_opts[e.to_key]
 end
 
-
+G.FUNCS.Waal_upd_SB_opt = function(e)
+	config.Blind_Custom.Small = e.to_key
+end
+G.FUNCS.Waal_upd_BB_opt = function(e)
+	config.Blind_Custom.Big = e.to_key
+end
+G.FUNCS.Waal_upd_BS_opt = function(e)
+	config.Blind_Custom.Boss = e.to_key
+end
+G.FUNCS.Waal_upd_SD_opt = function(e)
+	config.Blind_Custom.Showdown = e.to_key
+end
 -------------
 --hands
 -------------
@@ -80,7 +132,6 @@ SMODS.PokerHand {
 	evaluate = function(parts, hand)
 		
 		if #get_flush(hand) >= 1 then return {} end
-
 		local valid = {}
 		local count1 = 0
 		local count2 = 0
@@ -188,7 +239,27 @@ SMODS.Joker {
 	end,
 }
 
-
+SMODS.Joker {
+	key = "BestSpark687090",
+	loc_txt = {
+		name = 'The Best Spark',
+		text = { '{X:gray,C:white}^1.5{} Chips', 'CANT BE MODIFIED' }
+	},
+	config = {extra = {mult = 1.0, gain = 0.05}},
+	atlas = "Jokers",
+	pos = {x = 0, y = 2},
+	soul_pos = {x = 1, y = 2},
+	rarity = 3,
+	blueprint_compat = true,
+	pools = {["Modded"] = true, ["Wall"] = true},
+	cost = 7,
+	calculate = function(self, card, context)
+		if context.joker_main then
+			return {chips = math.floor(G.GAME.current_round.current_hand.chips^1.5 - G.GAME.current_round.current_hand.chips), message = '^1.5 Chips', colour = G.C.CHIPS , remove_default_message = true}
+	
+		end
+	end,
+}
 
 --blinds
 --[[ most disabled because I dont like them lol
@@ -963,36 +1034,89 @@ function get_new_showdown()
 
 end
 
+function get_new_blind(type)
+	if type == 1 then return "bl_small" end
+	if type == 2 then return "bl_big" end
+	if type == 3 then return get_new_boss() end
+	if type == 4 then return get_new_showdown() end
+	
+	return "bl_wall"
+end
+
+function set_small_blind()
+	
+	if G.GAME.round_resets.ante == 8 and config.Blind_Custom.Small_SD and config.Blind_Custom.ShowdownToggle then
+		if config.Blind_Custom.Showdown == 5 then
+			G.GAME.round_resets.blind_states["Small"] = "Hide"
+		else
+			G.GAME.round_resets.blind_states["Small"] = "Upcoming"
+		end
+		G.GAME.round_resets.blind_choices.Small = get_new_blind(config.Blind_Custom.Showdown)
+	else
+		if config.Blind_Custom.Small == 5 then
+			G.GAME.round_resets.blind_states["Small"] = "Hide"
+		elseif config.Blind_Custom.Small < 5 then
+
+			G.GAME.round_resets.blind_states["Small"] = "Upcoming"
+		end
+		G.GAME.round_resets.blind_choices.Small = get_new_blind(config.Blind_Custom.Small)
+	end
+	
+	
+end
+
+function set_big_blind()
+	
+	if G.GAME.round_resets.ante == 8 and config.Blind_Custom.Big_SD and config.Blind_Custom.ShowdownToggle then
+		if config.Blind_Custom.Showdown == 5 then
+			G.GAME.round_resets.blind_states["Big"] = "Hide"
+		else
+			G.GAME.round_resets.blind_states["Big"] = "Upcoming"
+		end
+		G.GAME.round_resets.blind_choices.Big = get_new_blind(config.Blind_Custom.Showdown)
+	else
+		if config.Blind_Custom.Big == 5 then
+			G.GAME.round_resets.blind_states["Big"] = "Hide"
+		elseif config.Blind_Custom.Big < 5 then
+
+			G.GAME.round_resets.blind_states["Big"] = "Upcoming"
+		end
+		G.GAME.round_resets.blind_choices.Big = get_new_blind(config.Blind_Custom.Big)
+	end
+	
+	
+end
+
+
+function set_boss_blind()
+	G.GAME.round_resets.blind_states["Boss"] = "Upcoming"
+	if G.GAME.round_resets.ante == 8 and config.Blind_Custom.Boss_SD and config.Blind_Custom.ShowdownToggle then
+		G.GAME.round_resets.blind_choices.Boss = get_new_blind(config.Blind_Custom.Showdown)
+		if config.Blind_Custom.Showdown == 5 then
+			G.GAME.round_resets.blind_choices.Boss = get_new_blind(config.Blind_Custom.Boss)
+		end
+		
+	else
+		G.GAME.round_resets.blind_choices.Boss = get_new_blind(config.Blind_Custom.Boss)
+	end
+	
+	
+end
+
 function reset_blinds()
 	G.GAME.round_resets.blind_states = G.GAME.round_resets.blind_states or {Small = 'Select', Big = 'Upcoming', Boss = 'Upcoming'}
-	if config["AllBoss"] then
-		if G.GAME.round_resets.blind_choices.Big == "bl_big" then
-			G.GAME.round_resets.blind_choices.Big = get_new_boss()
-		end
-		if G.GAME.round_resets.blind_choices.Small == "bl_small" then
-			G.GAME.round_resets.blind_choices.Small = get_new_boss()
-		end
-
+	--G.GAME.round_resets.blind_states["Small"] = "Hide"
+	--G.GAME.round_resets.blind_states["Big"] = "Hide"
+	--set_small_blind()
+	if G.GAME.round_resets.blind_states["Small"] == "Defeated" and G.GAME.round_resets.blind_states["Big"] == "Hide" then
+		G.GAME.round_resets.blind_states["Boss"] = "Select"
 	end
-	if G.GAME.round_resets.blind_states.Boss == 'Defeated' then
-
-		if config["AllBoss"] or config["HardMode"] and G.GAME.round_resets.ante > G.GAME.win_ante then
-			G.GAME.round_resets.blind_choices.Big = get_new_boss()
-			G.GAME.round_resets.blind_choices.Small = get_new_boss()
-		else
-			G.GAME.round_resets.blind_choices.Small = "bl_small"
-			G.GAME.round_resets.blind_choices.Big = "bl_big"
-		end
-		if config["HardMode"] and G.GAME.round_resets.ante > G.GAME.win_ante then
-			G.GAME.round_resets.blind_choices.Boss = get_new_showdown()
-		else
-			G.GAME.round_resets.blind_choices.Boss = get_new_boss()
-		end
+	if G.GAME.round_resets.blind_states.Boss == 'Defeated' or G.GAME.round == 0 then
+		set_small_blind()
+		set_boss_blind()
+		set_big_blind()
 
 
-		G.GAME.round_resets.blind_states.Small = 'Upcoming'
-		G.GAME.round_resets.blind_states.Big = 'Upcoming'
-		G.GAME.round_resets.blind_states.Boss = 'Upcoming'
 		G.GAME.blind_on_deck = 'Small'
 		--G.GAME.round_resets.ante = G.GAME.round_resets.ante - 1
 		G.GAME.round_resets.boss_rerolled = false
@@ -1004,7 +1128,6 @@ end
 
 
 ----
-
 
 
 
