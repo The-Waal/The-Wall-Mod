@@ -74,3 +74,38 @@ colours = {(G.GAME.hands[_c.config.hand_type].level==1 and G.C.UI.TEXT_DARK or G
 '''
 match_indent = true
 overwrite = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "G.GAME.round_resets.blind_states[skip_to] = 'Select'"
+position = "at"
+payload = '''
+local tempVal = 0
+if not G.GAME.round_resets.blind_states["Small"] then G.GAME.round_resets.blind_states["Small"] = "Upcoming" end
+if not G.GAME.round_resets.blind_states["Big"] then G.GAME.round_resets.blind_states["Big"] = "Upcoming" end
+if not G.GAME.round_resets.blind_states["Boss"] then G.GAME.round_resets.blind_states["Boss"] = "Upcoming" end
+local order = {"Small", "Big", "Boss"}
+for _, i in pairs(order) do
+	print(_)
+	if G.GAME.round_resets.blind_states[i] == "Upcoming" and tempVal == 0 then
+		print(_, i, tempVal)
+		tempVal = 1
+		G.GAME.round_resets.blind_states[i] = 'Select'
+		G.GAME.blind_on_deck = i
+		break
+	end
+end
+'''
+match_indent = true
+overwrite = true
+
+[[patches]]
+[patches.pattern]
+target = "functions/button_callbacks.lua"
+pattern = "G.GAME.blind_on_deck = skip_to"
+position = "at"
+payload = '''
+'''
+match_indent = true
+overwrite = true
