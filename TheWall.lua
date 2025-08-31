@@ -5,12 +5,13 @@
 --- MOD_AUTHOR: [THE WAAL]
 --- MOD_DESCRIPTION: Adds a few blinds and new features!
 --- VERSION: 0.2.3
+--- PRIORITY: 1000
 
 SMODS.Atlas({
-    key = 'modicon',
-    path = 'wall.png',
-    px = 32,
-    py = 32
+	key = 'modicon',
+	path = 'wall.png',
+	px = 32,
+	py = 32
 })
 
 local mod_path = "" .. SMODS.current_mod.path
@@ -19,8 +20,18 @@ local debug = false
 config.gameset_toggle = true
 
 
+--[[
 SMODS.current_mod.config_tab = function()
-	return {n = G.UIT.ROOT, config = {r = 0.2, minw = 12, minh = 9, align = "cl", padding = 0.1, colour = HEX('442266'), outline = 3, outline_colour = G.C.PURPLE}, nodes = {
+	return {n = G.UIT.ROOT, config = {r = 0.2, minw = 13, minh = 9, align = "tl", padding = 0.1, colour = HEX('442266')}, nodes = {
+
+		{n = G.UIT.C, config = {minw=2, minh=9, colour = HEX('662299'), padding = 0.3, r = 0.1}, nodes = {
+			UIBox_button({label = {"Showdown"}, colour = G.C.PURPLE}),
+			UIBox_button({label = {"Small"}, colour = G.C.PURPLE}),
+			UIBox_button({label = {"Big"}, colour = G.C.PURPLE}),
+			UIBox_button({label = {"Boss"}, colour = G.C.PURPLE, button = 'Config_Boss'}),
+
+		}},
+
 		{n = G.UIT.C, config = {minw=6, minh=9, colour = G.C.MONEY, padding = 0.3, r = 0.1}, nodes = {
 			create_option_cycle({
 				scale = 1, 
@@ -30,30 +41,8 @@ SMODS.current_mod.config_tab = function()
 				opt_callback = 'Waal_upd_score_opt',
 				options = {"None", "Needle (0.5x)", "Water (2x)", "House (5x)", "Manacle (10x)", "Voilet Vessel (25x)", "Cryptid (100x)", "Roffle (1000x)", "Ralsei (1e10x)", "The Waal (1e100x)"}
 			}),
-			create_option_cycle({
-				scale = 1, 
-				w = 4, 
-				label = "Small Blind", 
-				current_option = config["Blind_Custom"].Small, 
-				opt_callback = 'Waal_upd_SB_opt',
-				options = {"Small", "Big", "Boss", "Showdown", "Removed", "Random"}
-			}),
-			create_option_cycle({
-				scale = 1, 
-				w = 4, 
-				label = "Big Blind", 
-				current_option = config["Blind_Custom"].Big, 
-				opt_callback = 'Waal_upd_BB_opt',
-				options = {"Small", "Big", "Boss", "Showdown", "Removed", "Random"}
-			}),
-			create_option_cycle({
-				scale = 1, 
-				w = 4, 
-				label = "Boss Blind", 
-				current_option = config["Blind_Custom"].Boss, 
-				opt_callback = 'Waal_upd_BS_opt',
-				options = {"Small", "Big", "Boss", "Showdown", "Random"}
-			}),
+
+
 			create_option_cycle({
 				scale = 1, 
 				w = 4, 
@@ -64,17 +53,134 @@ SMODS.current_mod.config_tab = function()
 			}),
 
 		}},
-	
-		{n = G.UIT.C, config = {minw=6, minh=9, colour = G.C.MONEY, padding = 0.3, r = 0.1}, nodes = {
-			create_toggle({label = "Zero Blind Size", ref_table = config, ref_value = "Dev"}),
-			create_toggle({label = "All Boss Blinds", ref_table = config, ref_value = "AllBoss"}),
-			create_toggle({label = "Hard Mode", ref_table = config, ref_value = "HardMode"}),
+
+		{n = G.UIT.C, config = {minw=10, minh=9, colour = HEX('552288'), padding = 0.3, r = 0.1}, nodes = {
+
+			--create_toggle({label = "All Boss Blinds", ref_table = config, ref_value = "AllBoss"}),
+			--create_toggle({label = "Hard Mode", ref_table = config, ref_value = "HardMode"}),
 			create_toggle({label = "Showdowns", ref_table = config["Blind_Custom"], ref_value = "ShowdownToggle"}),
-			create_toggle({label = "Small Blind Showdowns", ref_table = config["Blind_Custom"], ref_value = "Small_SD"}),
+
 			create_toggle({label = "Big Blind Showdowns", ref_table = config["Blind_Custom"], ref_value = "Big_SD"}),
 			create_toggle({label = "Boss Blind Showdowns", ref_table = config["Blind_Custom"], ref_value = "Boss_SD"}),
 		}},
 	}}
+
+end
+]]
+function scaling_tab()
+	return {n = G.UIT.ROOT, config = {r = 0.2, minw = 13, minh = 9, align = "tm", padding = 0.1, colour = HEX('442266')}, nodes = {
+			create_toggle({label = "Zero Blind Size", ref_table = config, ref_value = "Dev"}),
+			create_option_cycle({
+				scale = 1, 
+				w = 4, 
+				label = "Scaling", 
+				current_option = config["Blind_Scaling_ID"], 
+				opt_callback = 'Waal_upd_score_opt',
+				options = {"None", "Anti-Waal (0.1x)", "Needle^2 (0.25x)", "Needle (0.5x)", "Water (2x)", "House (5x)", "Manacle (10x)", "Voilet Vessel (25x)", "Cryptid (100x)", "Roffle (1000x)", "Ralsei (1e10x)", "The Waal (1e100x)"}
+			}),
+			create_toggle({label = "Scaling applys after ante 8?", ref_table = config, ref_value = "Scaling_Endless"}),
+--[[
+			{n = G.UIT.R, config = {minw=5, minh=1, colour = G.C.CLEAR, padding = 0.1, r = 0.1}, nodes = {
+				create_text_input({
+					scale = 1, 
+					w = 4, 
+					label = "Start Ante", 
+					ref_table = config, 
+					ref_value = "Start_Ante",
+				}),
+			}},
+			{n = G.UIT.R, config = {minw=5, minh=1, colour = G.C.CLEAR, padding = 0.1, r = 0.1}, nodes = {
+				create_text_input({
+					scale = 1, 
+					w = 4, 
+					label = "End Ante", 
+					ref_table = config, 
+					ref_value = "End_Ante",
+				}),
+			}},
+]]
+	}}
+end
+
+function blinds_tab()
+	return {n = G.UIT.ROOT, config = {r = 0.2, minw = 12, minh = 9, align = "cm", padding = 0.1, colour = HEX('442266')}, nodes = {
+		{n = G.UIT.C, config = {minw=4, minh=9, colour = HEX('552288'), padding = 0.3, r = 0.1}, nodes = {
+			{n = G.UIT.R, config = {minw=4, minh=1, colour = G.C.CLEAR, r = 0.1, align = "tm"}, nodes = {
+				{n = G.UIT.T, config = {minw=4, minh=1, colour = HEX('FFFFFF'), r = 0.1, text = "Small Blind", scale = 1}, nodes = {}},
+			}},
+			create_option_cycle({
+				scale = 1, 
+				w = 4, 
+				label = "Blind Type", 
+				current_option = config["Blind_Custom"].Small, 
+				opt_callback = 'Waal_upd_SB_opt',
+				options = {"Small", "Big", "Boss", "Showdown", "Removed", "Random"}
+			}),
+			create_toggle({label = "Small Blind Showdowns", ref_table = config["Blind_Custom"], ref_value = "Small_SD"}),
+			create_option_cycle({
+				scale = 1, 
+				w = 4, 
+				label = "Showdown Blind Type", 
+				current_option = config["Blind_Custom"].Small_SDT, 
+				opt_callback = 'Waal_upd_SBSD_opt',
+				options = {"Small", "Big", "Boss", "Showdown", "Removed", "Random"}
+			}),
+		}},
+		{n = G.UIT.C, config = {minw=4, minh=9, colour = HEX('552288'), padding = 0.3, r = 0.1}, nodes = {
+			{n = G.UIT.R, config = {minw=4, minh=1, colour = G.C.CLEAR, r = 0.1, align = "tm"}, nodes = {
+				{n = G.UIT.T, config = {minw=4, minh=1, colour = HEX('FFFFFF'), r = 0.1, text = "Big Blind", scale = 1}, nodes = {}},
+			}},
+			create_option_cycle({
+				scale = 1, 
+				w = 4, 
+				label = "Blind Type", 
+				current_option = config["Blind_Custom"].Big, 
+				opt_callback = 'Waal_upd_BB_opt',
+				options = {"Small", "Big", "Boss", "Showdown", "Removed", "Random"}
+			}),
+			create_toggle({label = "Big Blind Showdowns", ref_table = config["Blind_Custom"], ref_value = "Big_SD"}),
+			create_option_cycle({
+				scale = 1, 
+				w = 4, 
+				label = "Showdown Blind Type", 
+				current_option = config["Blind_Custom"].Big_SDT, 
+				opt_callback = 'Waal_upd_BBSD_opt',
+				options = {"Small", "Big", "Boss", "Showdown", "Removed", "Random"}
+			}),
+		}},
+		{n = G.UIT.C, config = {minw=4, minh=9, colour = HEX('552288'), padding = 0.3, r = 0.1}, nodes = {
+			{n = G.UIT.R, config = {minw=4, minh=1, colour = G.C.CLEAR, r = 0.1, align = "tm"}, nodes = {
+				{n = G.UIT.T, config = {minw=4, minh=1, colour = HEX('FFFFFF'), r = 0.1, text = "Boss Blind", scale = 1}, nodes = {}},
+			}},
+			create_option_cycle({
+				scale = 1, 
+				w = 4, 
+				label = "Blind Type", 
+				current_option = config["Blind_Custom"].Boss, 
+				opt_callback = 'Waal_upd_BS_opt',
+				options = {"Small", "Big", "Boss", "Showdown", "Random"}
+			}),
+			create_toggle({label = "Boss Blind Showdowns", ref_table = config["Blind_Custom"], ref_value = "Boss_SD"}),
+			create_option_cycle({
+				scale = 1, 
+				w = 4, 
+				label = "Showdown Blind Type", 
+				current_option = config["Blind_Custom"].Boss_SDT, 
+				opt_callback = 'Waal_upd_BSSD_opt',
+				options = {"Small", "Big", "Boss", "Showdown", "Random"}
+			}),
+		}},
+	}}
+end
+
+SMODS.current_mod.extra_tabs = function()
+	return {
+		{label = 'Scaling', tab_definition_function = scaling_tab},
+		{label = 'Blinds', tab_definition_function = blinds_tab},
+		--{label = 'Scaling', tab_definition_function = scaling_tab},
+		--{label = 'Scaling', tab_definition_function = scaling_tab},
+		--{label = 'Scaling', tab_definition_function = scaling_tab},
+	}
 end
 
 local allHands = G.handlist
@@ -88,10 +194,13 @@ local allHands = G.handlist
 
 G.FUNCS.Waal_upd_score_opt = function(e)
 	config.Blind_Scaling_ID = e.to_key
-	local scale_opts = {"None", "Needle (0.5x)", "Water (2x)", "House (5x)", "Manacle (10x)", "Voilet Vessel (25x)", "Cryptid (100x)", "Roffle (1000x)", "Ralsei (1e10x)", "The Waal (1e100x)"}
+	local scale_opts = {"None", "Anti-Waal (0.1x)", "Needle^2 (0.25x)", "Needle (0.5x)", "Water (2x)", "House (5x)", "Manacle (10x)", "Voilet Vessel (25x)", "Cryptid (100x)", "Roffle (1000x)", "Ralsei (1e10x)", "The Waal (1e100x)"}
 	config.Blind_Scaling = scale_opts[e.to_key]
 end
 
+G.FUNCS.Waal_Start_Ante_opt = function(e)
+	config.Start_Ante = e
+end
 G.FUNCS.Waal_upd_SB_opt = function(e)
 	config.Blind_Custom.Small = e.to_key
 end
@@ -101,8 +210,35 @@ end
 G.FUNCS.Waal_upd_BS_opt = function(e)
 	config.Blind_Custom.Boss = e.to_key
 end
+G.FUNCS.Waal_upd_SBSD_opt = function(e)
+	config.Blind_Custom.Small_SDT = e.to_key
+end
+G.FUNCS.Waal_upd_BBSD_opt = function(e)
+	config.Blind_Custom.Big_SDT = e.to_key
+end
+G.FUNCS.Waal_upd_BSSD_opt = function(e)
+	config.Blind_Custom.Boss_SDT = e.to_key
+end
 G.FUNCS.Waal_upd_SD_opt = function(e)
 	config.Blind_Custom.Showdown = e.to_key
+end
+
+G.FUNCS.Config_Boss = function(e)
+	for _, i in pairs(e.parent.parent.parent) do print(_) print(i) end
+	local config_uibox = e.parent.parent.parent
+
+	local menu_wrap = config_uibox.parent
+	
+	-- Delete the current menu UIBox:
+	menu_wrap.config.object:remove()
+	-- Create the new menu UIBox:
+	menu_wrap.config.object = UIBox({
+		definition = my_menu_function(e.config.my_data),
+		config = {parent = menu_wrap, type = "cm"} -- You MUST specify parent!
+	})
+	-- Update the UI:
+	menu_wrap.UIBox:recalculate()
+	
 end
 -------------
 --hands
@@ -126,11 +262,19 @@ function get_new_boss()
 end
 ]]
 
-local s_table = {"None", "Needle (0.5x)", "Water (2x)", "House (5x)", "Manacle (10x)", "Voilet Vessel (25x)", "Cryptid (100x)", "Roffle (1000x)", "Ralsei (1e10x)", "The Waal (1e100x)"}
-local n_table = {nil, 0.5, 2, 5, 10, 25, 100, 1000, 1e10, 1e100}
+local s_table = {"None", "Anti-Waal (0.1x)", "Needle^2 (0.25x)", "Needle (0.5x)", "Water (2x)", "House (5x)", "Manacle (10x)", "Voilet Vessel (25x)", "Cryptid (100x)", "Roffle (1000x)", "Ralsei (1e10x)", "The Waal (1e100x)"}
+local n_table = {nil, 0.1, 0.25, 0.5, 2, 5, 10, 25, 100, 1000, 1e10, 1e100}
 local gba = get_blind_amount
 function get_blind_amount(ante)
-	local amount = gba(ante)
+	local amount = 1
+	if ante - math.floor(ante) ~= 0 then
+		local a = gba(math.floor(ante)) ^ (ante - math.floor(ante))
+		local b = gba(math.ceil(ante)) ^ (1 - (ante - math.floor(ante)))
+		amount = a * b
+
+	else
+		amount = gba(ante)
+	end
 	if config.Dev then
 		return 0
 	end
@@ -145,10 +289,18 @@ function get_blind_amount(ante)
 		for i = 1, #s_table do
 			if config["Blind_Scaling"] == s_table[i] then num = i end
 		end
-		if num ~= 1 then
-			scaling = math.log(n_table[num]*50000,50000)
+		print(scaling)
+		if config["Scaling_Endless"] or ante <= 8 then 
+			if num ~= 1 then
+				scaling = math.log(n_table[num]*50000,50000)
+			end
+			if ante == 1 then scaling = scaling ^ 0.5 end
+			
+			amount = amount ^ scaling^(ante/8)
+			--amount = math.floor(amount/10^math.floor(math.log10(amount))*10)/10*10^math.floor(math.log10(amount))
+		else
+			amount = amount * n_table[num]
 		end
-		amount = amount ^ scaling^(ante/8)
 	end
 
 	return amount
@@ -212,13 +364,13 @@ end
 
 function set_small_blind()
 	
-	if G.GAME.round_resets.ante == 8 and config.Blind_Custom.Small_SD and config.Blind_Custom.ShowdownToggle then
-		if config.Blind_Custom.Showdown == 5 then
+	if G.GAME.round_resets.ante == 8 and config.Blind_Custom.Small_SD then
+		if config.Blind_Custom.Small_SDT == 5 then
 			G.GAME.round_resets.blind_states["Small"] = "Hide"
 		else
 			G.GAME.round_resets.blind_states["Small"] = "Upcoming"
 		end
-		G.GAME.round_resets.blind_choices.Small = get_new_blind(config.Blind_Custom.Showdown)
+		G.GAME.round_resets.blind_choices.Small = get_new_blind(config.Blind_Custom.Small_SDT)
 	else
 		if config.Blind_Custom.Small == 5 then
 			G.GAME.round_resets.blind_states["Small"] = "Hide"
@@ -234,13 +386,13 @@ end
 
 function set_big_blind()
 	
-	if G.GAME.round_resets.ante == 8 and config.Blind_Custom.Big_SD and config.Blind_Custom.ShowdownToggle then
-		if config.Blind_Custom.Showdown == 5 then
+	if G.GAME.round_resets.ante == 8 and config.Blind_Custom.Big_SD then
+		if config.Blind_Custom.Big_SDT == 5 then
 			G.GAME.round_resets.blind_states["Big"] = "Hide"
 		else
 			G.GAME.round_resets.blind_states["Big"] = "Upcoming"
 		end
-		G.GAME.round_resets.blind_choices.Big = get_new_blind(config.Blind_Custom.Showdown)
+		G.GAME.round_resets.blind_choices.Big = get_new_blind(config.Blind_Custom.Big_SDT)
 	else
 		if config.Blind_Custom.Big == 5 then
 			G.GAME.round_resets.blind_states["Big"] = "Hide"
@@ -258,9 +410,9 @@ end
 function set_boss_blind()
 	G.GAME.round_resets.blind_states["Boss"] = "Upcoming"
 	
-	if G.GAME.round_resets.ante == 8 and config.Blind_Custom.Boss_SD and config.Blind_Custom.ShowdownToggle then
-		G.GAME.round_resets.blind_choices.Boss = get_new_blind(config.Blind_Custom.Showdown)
-		if config.Blind_Custom.Showdown == 5 then
+	if G.GAME.round_resets.ante == 8 and config.Blind_Custom.Boss_SD then
+		G.GAME.round_resets.blind_choices.Boss = get_new_blind(config.Blind_Custom.Boss_SDT)
+		if config.Blind_Custom.Boss_SDT == 5 then
 			G.GAME.round_resets.blind_choices.Boss = get_new_blind(6)
 		end
 		
@@ -279,17 +431,30 @@ function reset_blinds()
 	--G.GAME.round_resets.blind_states["Small"] = "Hide"
 	--G.GAME.round_resets.blind_states["Big"] = "Hide"
 	--set_small_blind()
+	
 	if G.GAME.round_resets.blind_states["Small"] == "Defeated" and G.GAME.round_resets.blind_states["Big"] == "Hide" then
 		G.GAME.round_resets.blind_states["Boss"] = "Select"
 	end
+--[[
+	if G.GAME.round == 0 then
+		if not tonumber(config["Start_Ante"]) then config["Start_Ante"] = 1 end
+		if not tonumber(config["End_Ante"]) then config["End_Ante"] = 8 end	
+		config["Start_Ante"], config["End_Ante"] = tonumber(config["Start_Ante"]), tonumber(config["End_Ante"])
+		G.GAME.round_resets.ante = config["Start_Ante"]
+		G.GAME.round_resets.ante_disp = G.GAME.round_resets.ante
+		G.GAME.round_resets.blind_ante = G.GAME.round_resets.ante
+		G.GAME.win_ante = config.End_Ante
+	end
+]]
 	if G.GAME.round_resets.blind_states.Boss == 'Defeated' or G.GAME.round == 0 then
+		--G.GAME.round_resets.ante = G.GAME.round_resets.ante + 0.5
 		set_small_blind()
 		set_boss_blind()
 		set_big_blind()
 
 
 		G.GAME.blind_on_deck = 'Small'
-		--G.GAME.round_resets.ante = G.GAME.round_resets.ante - 1
+	
 		G.GAME.round_resets.boss_rerolled = false
 	end
 
