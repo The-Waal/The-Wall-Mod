@@ -364,7 +364,7 @@ end
 
 function set_small_blind()
 	
-	if G.GAME.round_resets.ante == 8 and config.Blind_Custom.Small_SD then
+	if math.floor(G.GAME.round_resets.ante/8) == G.GAME.round_resets.ante / 8 and config.Blind_Custom.Small_SD then
 		if config.Blind_Custom.Small_SDT == 5 then
 			G.GAME.round_resets.blind_states["Small"] = "Hide"
 		else
@@ -386,7 +386,7 @@ end
 
 function set_big_blind()
 	
-	if G.GAME.round_resets.ante == 8 and config.Blind_Custom.Big_SD then
+	if math.floor(G.GAME.round_resets.ante/8) == G.GAME.round_resets.ante / 8 and config.Blind_Custom.Big_SD then
 		if config.Blind_Custom.Big_SDT == 5 then
 			G.GAME.round_resets.blind_states["Big"] = "Hide"
 		else
@@ -410,7 +410,7 @@ end
 function set_boss_blind()
 	G.GAME.round_resets.blind_states["Boss"] = "Upcoming"
 	
-	if G.GAME.round_resets.ante == 8 and config.Blind_Custom.Boss_SD then
+	if math.floor(G.GAME.round_resets.ante/8) == G.GAME.round_resets.ante / 8 and config.Blind_Custom.Boss_SD then
 		G.GAME.round_resets.blind_choices.Boss = get_new_blind(config.Blind_Custom.Boss_SDT)
 		if config.Blind_Custom.Boss_SDT == 5 then
 			G.GAME.round_resets.blind_choices.Boss = get_new_blind(6)
@@ -459,6 +459,66 @@ function reset_blinds()
 	end
 
 
+end
+
+G.FUNCS.reroll_boss = function(e) 
+	stop_use()
+	G.GAME.round_resets.boss_rerolled = true
+	if not G.from_boss_tag then ease_dollars(-10) end
+	G.from_boss_tag = nil
+	G.CONTROLLER.locks.boss_reroll = true
+	G.E_MANAGER:add_event(Event({
+		trigger = 'immediate',
+		func = function()
+			play_sound('other1')
+			G.blind_select_opts.boss:set_role({xy_bond = 'Weak'})
+			G.blind_select_opts.boss.alignment.offset.y = 20
+			return true
+		end
+	}))
+	G.E_MANAGER:add_event(Event({
+		trigger = 'after',
+		delay = 0.3,
+		func = (function()
+		local par = G.blind_select_opts.boss.parent
+		print(G.GAME.round_resets.ante)
+		print(G.GAME.round_resets.blind_ante)
+		if math.floor(G.GAME.round_resets.ante/8) == G.GAME.round_resets.ante / 8 and config.Blind_Custom.Boss_SD then
+			G.GAME.round_resets.blind_choices.Boss = get_new_blind(config.Blind_Custom.Boss_SDT)
+		else
+			G.GAME.round_resets.blind_choices.Boss = get_new_blind(config.Blind_Custom.Boss)
+		end
+		G.blind_select_opts.boss:remove()
+		G.blind_select_opts.boss = UIBox{
+			T = {par.T.x, 0, 0, 0, },
+			definition =
+			{n=G.UIT.ROOT, config={align = "cm", colour = G.C.CLEAR}, nodes={
+				UIBox_dyn_container({create_UIBox_blind_choice('Boss')},false,get_blind_main_colour('Boss'), mix_colours(G.C.BLACK, get_blind_main_colour('Boss'), 0.8))
+			}},
+			config = {align="bmi",
+					offset = {x=0,y=G.ROOM.T.y + 9},
+					major = par,
+					xy_bond = 'Weak'
+					}
+		}
+		par.config.object = G.blind_select_opts.boss
+		par.config.object:recalculate()
+		G.blind_select_opts.boss.parent = par
+		G.blind_select_opts.boss.alignment.offset.y = 0
+		
+		G.E_MANAGER:add_event(Event({blocking = false, trigger = 'after', delay = 0.5,func = function()
+			G.CONTROLLER.locks.boss_reroll = nil
+			return true
+			end
+		}))
+
+		save_run()
+		for i = 1, #G.GAME.tags do
+			if G.GAME.tags[i]:apply_to_run({type = 'new_blind_choice'}) then break end
+		end
+			return true
+		end)
+	}))
 end
 
 
